@@ -68,11 +68,6 @@ contour_center = None  # The (pixel row, pixel column) of contour
 contour_area = 0  # The area of contour
 extTop = None
 lasterror = 0
-lasterrors = []
-errorstuffs = []
-accels = []
-velo = []
-f = None
 MIN_CONTOUR_AREA = 1000  # The minimum area of a contour to be considered valid
 CROP_FLOOR = ((250, 0), (rc.camera.get_height(), rc.camera.get_width()))  # The crop window for the floor directly in front of the car
 
@@ -99,17 +94,6 @@ def remap_range(val: float, old_min: float, old_max: float, new_min: float, new_
     old_range = old_max - old_min
     new_range = new_max - new_min
     return new_range * (float(val - old_min) / float(old_range)) + new_min
-
-def get_velo():
-    global accels
-    global velo
-    forward_accel = rc.physics.get_linear_acceleration()[2]
-    accels.append(forward_accel)
-    acc_array = np.array(accels)
-    velo = np.cumsum(acc_array) * rc.get_delta_time()
-
-
-    
 
 # [FUNCTION] Finds contours in the current color image and uses them to update 
 # contour_center and contour_area
@@ -182,7 +166,7 @@ def update_contour():
 def start():
     global speed
     global angle
-    global f
+
 
     # Initialize variables
     speed = 0
@@ -206,8 +190,6 @@ def start():
         "   B button = print contour center and area"
     )
     rc.drive.set_max_speed(0.5)
-    f = open("data.txt", 'w')
-
 
 # [FUNCTION] After start() is run, this function is run once every frame (ideally at
 # 60 frames per second or slower depending on processing speed) until the back button
@@ -220,14 +202,12 @@ def update():
     """
     global speed
     global angle
-    global extTop
     global lasterror
-    global lasterrors
+
     
 
     # Search for contours in the current color image
     update_contour()
-    get_velo()
 
     # TODO Part 3: Determine the angle that the RACECAR should receive based on the current 
     # position of the center of line contour on the screen. Hint: The RACECAR should drive in
@@ -282,17 +262,11 @@ def update():
         #     angle = -1
         
         speed = 1
-        lasterrors.insert(0, error)
-        if len(lasterrors) > 5:
-            lasterrors.pop(4)
         lasterror = error
         
-        f.write(f"{error} {rc.get_delta_time()}\n")
     else:
         speed = 1
         
-    print("current speed: " + str(velo[-1]))
-
     # Use the triggers to control the car's speed
     # rt = rc.controller.get_trigger(rc.controller.Trigger.RIGHT)
     # lt = rc.controller.get_trigger(rc.controller.Trigger.LEFT)
