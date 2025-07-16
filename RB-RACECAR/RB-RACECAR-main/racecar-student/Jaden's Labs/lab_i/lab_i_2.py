@@ -94,7 +94,7 @@ def dilate_black_regions(img, kernel_size=6):
     # Any new pixels that were added by dilation and are currently white → turn them black
     new_black = (dilated_mask == 1) & (np.all(img == [255, 255, 255], axis=-1))
     img[new_black] = [0, 0, 0]
-
+    
     return img
 
 
@@ -129,6 +129,8 @@ def generate_occupancy_grid():
             if grid[i, j] == 0:
                 img[i, j] = [128, 0, 128]  # Purple path
     img = dilate_black_regions(img)    
+    kernel = np.ones((3, 3), np.uint8)
+    grid = cv2.dilate(grid, kernel, iterations=7)
     img = cv2.resize(img, (480, 360), interpolation=cv2.INTER_NEAREST)
     return grid, img
 
