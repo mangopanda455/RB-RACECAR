@@ -77,23 +77,6 @@ def find_furthest_point():
     return max_index, max_distance
 
 
-def dilate_black_regions(img, grid, kernel_size=3):
-    # Create mask for black pixels (obstacles)
-    black_mask = np.all(img == [0, 0, 0], axis=-1).astype(np.uint8)
-
-    kernel = np.ones((kernel_size, kernel_size), np.uint8)
-
-    # Dilate the black mask
-    dilated_mask = cv2.dilate(black_mask, kernel, iterations=1)
-    grid = cv2.dilate(grid, kernel, iterations=1)
-
-    # Apply the dilated mask back to the image
-    # Any new pixels that were added by dilation and are currently white → turn them black
-    new_black = (dilated_mask == 1) & (np.all(img == [255, 255, 255], axis=-1))
-    img[new_black] = [0, 0, 0]
-
-    return img, grid
-
 def draw_obstacle_lines(img, grid, threshold=10.0):
     for i in range(len(lidar_x) - 1):
         x1, y1 = lidar_x[i], lidar_y[i]
