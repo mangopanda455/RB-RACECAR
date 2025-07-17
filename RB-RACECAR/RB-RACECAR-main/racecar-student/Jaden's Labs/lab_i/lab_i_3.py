@@ -77,16 +77,15 @@ def find_furthest_point():
     return max_index, max_distance
 
 
-def dilate_black_regions(img, grid, kernel_size=6):
+def dilate_black_regions(img, grid, kernel_size=3):
     # Create mask for black pixels (obstacles)
     black_mask = np.all(img == [0, 0, 0], axis=-1).astype(np.uint8)
 
-    # Create 3x3 kernel
     kernel = np.ones((kernel_size, kernel_size), np.uint8)
 
     # Dilate the black mask
-    dilated_mask = cv2.dilate(black_mask, kernel, iterations=6)
-    grid = cv2.dilate(grid, kernel, iterations=6)
+    dilated_mask = cv2.dilate(black_mask, kernel, iterations=1)
+    grid = cv2.dilate(grid, kernel, iterations=1)
 
     # Apply the dilated mask back to the image
     # Any new pixels that were added by dilation and are currently white → turn them black
@@ -94,6 +93,25 @@ def dilate_black_regions(img, grid, kernel_size=6):
     img[new_black] = [0, 0, 0]
 
     return img, grid
+
+def draw_obstacle_lines(img, grid, threshold=10.0):
+    for i in range(len(lidar_x) - 1):
+        x1, y1 = lidar_x[i], lidar_y[i]
+        x2, y2 = lidar_x[i + 1], lidar_y[i + 1]
+
+        # Only connect points that are close together
+        if np.hypot(x2 - x1, y2 - y1) < threshold:
+            # Convert to grid coordinates
+            i1 = GRID_SIZE - 1 - int((y1 / GRID_WIDTH + 0.5) * GRID_SIZE)
+            j1 = int((x1 / GRID_WIDTH + 0.5) * GRID_SIZE)
+            i2 = GRID_SIZE - 1 - int((y2 / GRID_WIDTH + 0.5) * GRID_SIZE)
+            j2 = int((x2 / GRID_WIDTH + 0.5) * GRID_SIZE)
+
+            # Make sure points are in bounds
+            if all(0 <= k < GRID_SIZE for k in (i1, j1, i2, j2)):
+                cv2.line(img, (j1, i1), (j2, i2), (0, 0, 0), 1)
+                cv2.line(grid, (j1, i1), (j2, i2), 1, 1)
+
 
 
 def generate_occupancy_grid():
@@ -104,10 +122,11 @@ def generate_occupancy_grid():
     max_index, max_distance = find_furthest_point()
     print(max_index)
     print(max_distance)
+
+    goal = None  # Make sure goal is always defined
     for idx, (x, y) in enumerate(zip(lidar_x, lidar_y)):
-        i = int((y + GRID_WIDTH / 2) // CELL_SIZE)
-        j = int((x + GRID_WIDTH / 2) // CELL_SIZE)
-        i = GRID_SIZE - 1 - i  # Flip for image
+        i = GRID_SIZE - 1 - int((y / GRID_WIDTH + 0.5) * GRID_SIZE)
+        j = int((x / GRID_WIDTH + 0.5) * GRID_SIZE)
         if 0 <= i < GRID_SIZE and 0 <= j < GRID_SIZE:
             if idx == max_index:
                 grid[i, j] = 2
@@ -115,20 +134,24 @@ def generate_occupancy_grid():
                 goal = (i, j)
             else:
                 grid[i, j] = 1
-                img[i, j] = [0, 0, 0]    # Black = obstacle
+                img[i, j] = [0, 0, 0]  # Black = obstacle
+
+    draw_obstacle_lines(img, grid, threshold=10.0)
+
     img[half_grid, half_grid] = [128, 128, 0]
     start = (half_grid, half_grid)
-    img, grid = dilate_black_regions(img, grid)    
-    if 'goal' in locals():
+
+    if goal:
         print(f'goal[0] = {goal[0]} and goal[1] = {goal[1]}')
         img[goal[0], goal[1]] = [0, 255, 0]
-    if 'goal' in locals():  # only run if furthest point was valid
         path = a_star_path(grid, start, goal)
         for i, j in path:
             if grid[i, j] == 0:
                 img[i, j] = [128, 0, 128]  # Purple path
+
     img = cv2.resize(img, (480, 360), interpolation=cv2.INTER_NEAREST)
     return grid, img
+
 
 
 def a_star_path(grid, start, goal):
