@@ -119,7 +119,7 @@ def generate_occupancy_grid():
                 grid[i, j] = 1
                 img[i, j] = [0, 0, 0]  # Black = obstacle
 
-    draw_obstacle_lines(img, grid, threshold=10.0)
+    draw_obstacle_lines(img, grid, threshold=6.0)
 
     img[half_grid, half_grid] = [128, 128, 0]
     start = (half_grid, half_grid)
