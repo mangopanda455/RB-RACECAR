@@ -62,7 +62,6 @@ def update_slow():
     for i in grid:
         if i[1] + count % 29 < 24:
             matrix[i[0], (i[1]+count)%29] = 1
-        #matrix[i[0], (i[1]+ count)%29] = 1
     rc.display.set_matrix(matrix)
     count += 1
 
