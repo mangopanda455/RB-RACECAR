@@ -14,3 +14,5 @@
 - State Machine
 - 2 Types of Sensors
 
+Our Grand Prix codes are located in this part of our github repository:
+RB-RACECAR/RB-RACECAR/RB-RACECAR-main/racecar-student/final_codes
