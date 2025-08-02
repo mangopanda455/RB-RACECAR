@@ -6,7 +6,6 @@
 - Useful Debugging in Print Statements
 - AHRS/IMU Node For Velocity/Position  
 - Object Detector / Classifier  
-- Safety Stop (?)
 - Dynamic Obstacle
 - New Sensor
 
@@ -14,3 +13,4 @@
 
 - State Machine
 - 2 Types of Sensors
+
