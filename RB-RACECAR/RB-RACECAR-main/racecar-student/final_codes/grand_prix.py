@@ -791,7 +791,7 @@ def update():
                 ## elevator code, need to implement on day of grand prix
 
             # id refers to the id in the object detector
-    ########## EMERGENCY STOP ##########
+    ########## BACKUP CODE TO PREVENT COLLISION COUNTING##########
 
     scan = rc.lidar.get_samples()
     _, crash_distance = rc_utils.get_lidar_average_distance(scan, 0, 5)
