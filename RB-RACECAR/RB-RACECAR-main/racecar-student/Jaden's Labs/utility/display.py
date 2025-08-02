@@ -58,14 +58,10 @@ def update():
 def update_slow():
     global count
     global grid
-    matrix = np.zeros((8, 29), dtype=np.uint8)
+    matrix = np.zeros((8, 24), dtype=np.uint8)
     for i in grid:
-        matrix[i[0], (i[1]+ count)%29] = 1
-    matrix = np.delete(matrix, 24, axis=1)
-    matrix = np.delete(matrix, 24, axis=1)
-    matrix = np.delete(matrix, 24, axis=1)
-    matrix = np.delete(matrix, 24, axis=1)
-    matrix = np.delete(matrix, 24, axis=1)
+        if i[1] + count % 29 < 24:
+            matrix[i[0], (i[1]+count)%29] = 1
     rc.display.set_matrix(matrix)
     count += 1
 
